@@ -1,8 +1,8 @@
 const pool = require('../config/db')
 
-const select = () => {
+const select = ({ limit, offset }) => {
   return new Promise((resolve, reject) => {
-    pool.query('SELECT * FROM category', (err, result) => {
+    pool.query('SELECT * FROM category LIMIT$1 OFFSET$2', [limit, offset], (err, result) => {
       if (!err) {
         resolve(result.rows)
       } else {
