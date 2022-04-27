@@ -6,8 +6,21 @@ const modelCategory = require('../models/category')
 const errorServ = new createError.InternalServerError()
 exports.getCategory = async (req, res, next) => {
   try {
-    const result = await modelCategory.select()
+    const page = parseInt(req.query.page || 1)
+    const limit = parseInt(req.query.limit || 5)
+    const offset = (page - 1) * limit
+
+    const result = await modelCategory.select({ limit, offset })
+    const { rows: [count] } = await modelCategory.countCategori()
+    const totalData = parseInt(count.total)
+    const totalPage = Math.ceil(totalData / limit)
     res.status(200).json({
+      pagination: {
+        currentPage: page,
+        limit,
+        totalData,
+        totalPage
+      },
       data: result
     })
   } catch (error) {
@@ -47,11 +60,17 @@ exports.insert = async (req, res, next) => {
       data
     })
   } catch (error) {
-    console.log(error)
-    // res.status(500).json({
-    //   message: 'internal server error'
-    // })
-    next(errorServ)
+    // cara 1 --> buat object dari error
+    // const err = new Error('ada error id insert cateogry')
+    // err.status = 500
+    // next(err)
+
+    // cara 2 --> buat object sendiri
+    // next({ message: 'maaf error bro', status: 500 })
+
+    // cara 3 --> buat object dari pekage
+    next(createError(500, 'error ada di sini'))
+    next(new createError.NotFound())
   }
 }
 
